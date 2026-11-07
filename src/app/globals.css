@@ -22,7 +22,7 @@
   --color-border: var(--border);
   --color-input: var(--border);
   --color-ring: var(--primary);
-  --font-sans: Arial, Helvetica, sans-serif;
+  --font-sans: "Segoe UI", Arial, Helvetica, sans-serif;
   --font-mono: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -31,22 +31,85 @@
 }
 
 :root {
-  --background: #fafbf9;
-  --foreground: #1c2923;
-  --card: #ffffff;
-  --card-foreground: #1c2923;
-  --primary: #28734e;
-  --primary-foreground: #ffffff;
-  --secondary: #edf1ed;
-  --muted-foreground: #65716a;
-  --destructive: #bb3535;
-  --border: #dfe5df;
-  --radius: 0.625rem;
+  color-scheme: dark;
+  --background: #090a10;
+  --foreground: #ececf4;
+  --card: #11121c;
+  --card-foreground: #ececf4;
+  --primary: #b9a2ff;
+  --primary-foreground: #19112e;
+  --secondary: #1c1d2b;
+  --muted-foreground: #9b9cad;
+  --destructive: #ff929d;
+  --border: #292a3a;
+  --radius: 0.75rem;
 }
 
 @layer base {
   * { @apply border-border outline-ring/50; }
-  body { @apply bg-background text-foreground; }
+  body { @apply bg-background font-sans text-foreground; }
   button:not(:disabled), select:not(:disabled) { cursor: pointer; }
-  ::selection { background: #cee6d6; }
+  ::selection { background: #594280; color: #ffffff; }
+}
+
+/* The atmosphere stays behind the controls so every surface remains readable. */
+.galaxy-shell {
+  isolation: isolate;
+  position: relative;
+  background:
+    radial-gradient(ellipse at 15% 45%, #7652bb12, transparent 48%),
+    radial-gradient(ellipse at 85% 85%, #38578c0c, transparent 45%);
+}
+
+.galaxy-particles {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.galaxy-particles span {
+  position: absolute;
+  border-radius: 50%;
+  background: #d4c4ff;
+  opacity: 0.35;
+  box-shadow: 0 0 8px #b9a2ff45;
+  animation: particle-drift ease-in-out infinite alternate;
+}
+
+@keyframes particle-drift {
+  0% { transform: translate3d(-8px, 15px, 0); opacity: 0.15; }
+  50% { opacity: 0.6; }
+  100% { transform: translate3d(12px, -25px, 0); opacity: 0.25; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .galaxy-particles span { animation: none; }
+}
+
+.galaxy-mark {
+  border: 1px solid #b9a2ff30;
+  background: linear-gradient(145deg, #b9a2ff24, #b9a2ff08);
+  color: var(--primary);
+}
+
+.glass-header {
+  background: #0d0e16c7;
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border-color: #d7ccff12;
+}
+
+.glass-panel {
+  background: linear-gradient(135deg, #d6cbff0c, #11121ccf 45%, #b9a2ff05), #11121cb3;
+  border-color: #d7ccff20;
+  -webkit-backdrop-filter: blur(20px) saturate(125%);
+  backdrop-filter: blur(20px) saturate(125%);
+  box-shadow: 0 24px 80px #00000030, inset 0 1px 0 #ffffff12, inset 0 -1px 0 #b9a2ff06;
+}
+
+@supports not (backdrop-filter: blur(20px)) {
+  .glass-panel { background: #141520; }
+  .glass-header { background: #0d0e16; }
 }
