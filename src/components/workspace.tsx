@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowUpRight, Braces, LoaderCircle, LogOut } from "lucide-react";
+import Image from "next/image";
+import { ArrowUpRight, LoaderCircle, LogOut } from "lucide-react";
 import { AuthForm } from "@/components/auth-form";
 import { RequestWorkbench } from "@/components/request-workbench";
 import { Button } from "@/components/ui/button";
@@ -66,7 +67,10 @@ export function Workspace() {
       </div>
       <header className="glass-header border-b">
         <div className="mx-auto flex min-h-18 max-w-7xl flex-wrap items-center justify-between gap-4 px-5 py-4 sm:px-8">
-          <Link href="/" className="flex items-center gap-2.5 font-semibold tracking-tight"><span className="galaxy-mark flex size-9 items-center justify-center rounded-lg"><Braces size={21} /></span><span className="text-lg">GoRequest<span className="font-normal text-muted-foreground"> / web</span></span></Link>
+          <Link href="/" className="flex items-center gap-2.5 font-semibold tracking-tight">
+            <Image src="/icon.svg" alt="" width={40} height={40} unoptimized className="shrink-0" />
+            <span className="text-lg"><span className="text-primary">Go</span>Request<span className="font-normal text-muted-foreground"> / web</span></span>
+          </Link>
           <div className="flex items-center gap-4">
             {user && <><span className="hidden max-w-60 truncate text-sm text-muted-foreground sm:block">{user.email}</span><Button variant="ghost" size="sm" onClick={logout} disabled={loggingOut}><LogOut />Sign out</Button></>}
           </div>
