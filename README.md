@@ -14,7 +14,7 @@ The frontend is in early development. You can run it locally, explore the code, 
 
 ## Features
 
-- Create an account, sign in, and sign out with cookie-based sessions.
+- Use the workspace as a guest, or sign in with GitHub and sign out with cookie-based sessions.
 - Send GET, POST, PUT, PATCH, DELETE, HEAD, and OPTIONS requests.
 - Add custom headers, destination bearer tokens, and raw request bodies.
 - Configure request timeouts from 1 to 60,000 milliseconds.
@@ -80,7 +80,22 @@ Open http://localhost:3000. Restart the frontend after changing its environment 
 
 ### 2. Configure and start the backend
 
-In a separate terminal, open your GoRequest API checkout and run:
+In your GoRequest API checkout, configure its `.env` (the backend loads it automatically):
+
+```dotenv
+GITHUB_CLIENT_ID=your-github-oauth-app-client-id
+GITHUB_CLIENT_SECRET=your-github-oauth-app-client-secret
+GITHUB_REDIRECT_URL=http://localhost:8080/auth/github/callback
+AUTH_INSECURE_COOKIES=true
+FRONTEND_ORIGIN=http://localhost:3000
+```
+
+In your GitHub OAuth App settings, use `http://localhost:3000` as the homepage URL
+and `http://localhost:8080/auth/github/callback` as the authorization callback URL.
+Keep the client secret in the backend environment only. The frontend needs only
+`NEXT_PUBLIC_API_URL`; it does not need a GitHub client ID or secret.
+
+Then start the backend in a separate terminal:
 
 ```powershell
 # PowerShell
@@ -100,7 +115,7 @@ Use `localhost` for both servers. Mixing it with `127.0.0.1` can prevent session
 
 ### 3. Send your first request
 
-1. Create an account, then sign in. Signup and login are separate steps.
+1. Open the workspace as a guest, or choose **Sign in with GitHub** and authorize the app.
 2. Keep the default GET request to `https://httpbin.org/get`, or enter another public HTTP/HTTPS URL.
 3. Select **Send request**.
 4. Inspect the response body, headers, status, timing, and size.
@@ -114,7 +129,24 @@ The backend accepts public destinations only; localhost and private network targ
 | Frontend reports that the API is unavailable | Confirm that `http://localhost:8080/health` responds and `NEXT_PUBLIC_API_URL` points to the API. |
 | API works directly, but the browser cannot connect | Set `FRONTEND_ORIGIN` to the exact frontend origin and restart the backend. A running API still needs CORS configured. |
 | Login succeeds, but the session does not persist | Use `localhost` consistently and enable `AUTH_INSECURE_COOKIES=true` for local HTTP development. |
-| Signup or login returns 429 | Wait before retrying; the backend rate-limits authentication attempts. |
+| GitHub sign-in returns 404 | Configure all three `GITHUB_*` settings on the backend and restart it; sign-in routes are disabled when all are absent. |
+| GitHub reports a callback mismatch | Match the OAuth App callback URL and backend `GITHUB_REDIRECT_URL` exactly. |
+| Sign-in finishes on a JSON page | Set backend `FRONTEND_ORIGIN` to the frontend origin so the callback redirects back to the workspace. |
+| GitHub sign-in returns 429 | Wait before retrying; the backend rate-limits authentication attempts. |
+
+### GitHub sign-in flow
+
+The sign-in link navigates the browser to `${NEXT_PUBLIC_API_URL}/auth/github`.
+The Go backend handles GitHub authorization, state, PKCE, and the callback, sets
+an HttpOnly session cookie, then redirects to `FRONTEND_ORIGIN/`. The frontend
+checks `/auth/me` with cookies after loading; a 401 opens the guest workspace.
+Signing out revokes the session through `POST /auth/logout` and keeps the
+workspace available as a guest. Request execution is available in both states.
+
+The backend returns rejected OAuth callbacks as JSON errors on the API page.
+Return to the frontend and retry sign-in if authorization fails or expires.
+Email/password signup and login are no longer supported. With all GitHub
+settings absent, the backend still supports guest requests.
 
 ## Development
 
@@ -139,7 +171,7 @@ The backend accepts public destinations only; localhost and private network targ
 | `npm run build` | Create a production build |
 | `npm start` | Serve the production build |
 
-Client tests mock fetch to check the API contract. Account creation, CORS, session cookies, and request execution also need verification against a live backend.
+Client tests mock fetch to check the API contract. GitHub authorization, CORS, session cookies, and request execution also need verification against a live backend.
 
 Add UI components using the existing shadcn configuration:
 
@@ -170,7 +202,7 @@ npm run build
 npm start
 ```
 
-On the backend, set `FRONTEND_ORIGIN` to the exact HTTPS frontend origin and leave `AUTH_INSECURE_COOKIES` unset. The frontend and API must be on the same site, such as sibling subdomains, for SameSite=Strict session cookies.
+On the backend, set `FRONTEND_ORIGIN` to the exact HTTPS frontend origin and leave `AUTH_INSECURE_COOKIES` unset. Configure the backend GitHub credentials and set `GITHUB_REDIRECT_URL` to the public HTTPS API callback URL; use the same callback URL in your GitHub OAuth App. The frontend and API must be on the same site, such as sibling subdomains, for SameSite=Lax session cookies to accompany API fetches.
 
 All authentication and protected API calls include cookies through `credentials: "include"`. Session tokens are never stored in localStorage. Destination bearer tokens are supplied separately through the request editor's Authorization header.
 

@@ -46,10 +46,20 @@
 }
 
 @layer base {
-  * { @apply border-border outline-ring/50; }
-  body { @apply bg-background font-sans text-foreground; }
-  button:not(:disabled), select:not(:disabled) { cursor: pointer; }
-  ::selection { background: #594280; color: #ffffff; }
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background font-sans text-foreground;
+  }
+  button:not(:disabled),
+  select:not(:disabled) {
+    cursor: pointer;
+  }
+  ::selection {
+    background: #594280;
+    color: #ffffff;
+  }
 }
 
 /* The atmosphere stays behind the controls so every surface remains readable. */
@@ -79,13 +89,23 @@
 }
 
 @keyframes particle-drift {
-  0% { transform: translate3d(-8px, 15px, 0); opacity: 0.15; }
-  50% { opacity: 0.6; }
-  100% { transform: translate3d(12px, -25px, 0); opacity: 0.25; }
+  0% {
+    transform: translate3d(-8px, 15px, 0);
+    opacity: 0.15;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate3d(12px, -25px, 0);
+    opacity: 0.25;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .galaxy-particles span { animation: none; }
+  .galaxy-particles span {
+    animation: none;
+  }
 }
 
 .galaxy-mark {
@@ -102,14 +122,22 @@
 }
 
 .glass-panel {
-  background: linear-gradient(135deg, #d6cbff0c, #11121ccf 45%, #b9a2ff05), #11121cb3;
+  background:
+    linear-gradient(135deg, #d6cbff0c, #11121ccf 45%, #b9a2ff05), #11121cb3;
   border-color: #d7ccff20;
   -webkit-backdrop-filter: blur(20px) saturate(125%);
   backdrop-filter: blur(20px) saturate(125%);
-  box-shadow: 0 24px 80px #00000030, inset 0 1px 0 #ffffff12, inset 0 -1px 0 #b9a2ff06;
+  box-shadow:
+    0 24px 80px #00000030,
+    inset 0 1px 0 #ffffff12,
+    inset 0 -1px 0 #b9a2ff06;
 }
 
 @supports not (backdrop-filter: blur(20px)) {
-  .glass-panel { background: #141520; }
-  .glass-header { background: #0d0e16; }
+  .glass-panel {
+    background: #141520;
+  }
+  .glass-header {
+    background: #0d0e16;
+  }
 }
