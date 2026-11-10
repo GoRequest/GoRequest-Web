@@ -10,19 +10,22 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
   "devDependencies": {
-    "typescript": "~5.9.3",
+    "@tailwindcss/postcss": "^4.0.0",
     "@types/node": "^24.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "tailwindcss": "^4.0.0",
-    "@tailwindcss/postcss": "^4.0.0",
-    "tw-animate-css": "^1.0.0",
     "eslint": "^9.39.5",
     "eslint-config-next": "16.4.5",
+    "prettier": "3.9.10",
+    "tailwindcss": "^4.0.0",
+    "tw-animate-css": "^1.0.0",
+    "typescript": "~5.9.3",
     "vitest": "4.0.18"
   },
   "dependencies": {

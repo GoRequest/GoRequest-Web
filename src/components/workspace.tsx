@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowUpRight, LoaderCircle, LogOut } from "lucide-react";
-import { AuthForm } from "@/components/auth-form";
+import { GitHubSignInButton } from "@/components/github-sign-in-button";
 import { RequestWorkbench } from "@/components/request-workbench";
 import { Button } from "@/components/ui/button";
 import { api, ApiError } from "@/lib/api/client";
@@ -17,7 +17,8 @@ export function Workspace() {
   const [loggingOut, setLoggingOut] = useState(false);
 
   const loadSession = useCallback((signal?: AbortSignal) => {
-    return api.me(signal)
+    return api
+      .me(signal)
       .then(({ user }) => {
         if (signal?.aborted) return;
         setError("");
@@ -29,7 +30,11 @@ export function Workspace() {
           setError("");
           setUser(null);
         } else {
-          setError(error instanceof Error ? error.message : "Unable to load your session.");
+          setError(
+            error instanceof Error
+              ? error.message
+              : "Unable to load your session.",
+          );
         }
       })
       .finally(() => {
@@ -46,41 +51,133 @@ export function Workspace() {
   async function logout() {
     setLoggingOut(true);
     setError("");
-    try { await api.logout(); setUser(null); }
-    catch (error) { setError(error instanceof Error ? error.message : "Could not sign out. Try again."); }
-    finally { setLoggingOut(false); }
+    try {
+      await api.logout();
+      setUser(null);
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Could not sign out. Try again.",
+      );
+    } finally {
+      setLoggingOut(false);
+    }
   }
 
   return (
     <div className="galaxy-shell flex min-h-screen flex-col">
-      <div className="galaxy-particles" aria-hidden="true">
+      <div
+        className="galaxy-particles"
+        aria-hidden="true"
+      >
         {Array.from({ length: 32 }, (_, index) => (
-          <span key={index} style={{
-            left: `${(index * 37 + 7) % 100}%`,
-            top: `${(index * 23 + 11) % 100}%`,
-            width: index % 5 === 0 ? 3 : 2,
-            height: index % 5 === 0 ? 3 : 2,
-            animationDelay: `${-index * 1.7}s`,
-            animationDuration: `${18 + (index % 7) * 3}s`,
-          }} />
+          <span
+            key={index}
+            style={{
+              left: `${(index * 37 + 7) % 100}%`,
+              top: `${(index * 23 + 11) % 100}%`,
+              width: index % 5 === 0 ? 3 : 2,
+              height: index % 5 === 0 ? 3 : 2,
+              animationDelay: `${-index * 1.7}s`,
+              animationDuration: `${18 + (index % 7) * 3}s`,
+            }}
+          />
         ))}
       </div>
       <header className="glass-header border-b">
         <div className="mx-auto flex min-h-18 max-w-7xl flex-wrap items-center justify-between gap-4 px-5 py-4 sm:px-8">
-          <Link href="/" className="flex items-center gap-2.5 font-semibold tracking-tight">
-            <Image src="/icon.svg" alt="" width={40} height={40} unoptimized className="shrink-0" />
-            <span className="text-lg"><span className="text-primary">Go</span>Request<span className="font-normal text-muted-foreground"> / web</span></span>
+          <Link
+            href="/"
+            className="flex items-center gap-2.5 font-semibold tracking-tight"
+          >
+            <Image
+              src="/icon.svg"
+              alt=""
+              width={40}
+              height={40}
+              unoptimized
+              className="shrink-0"
+            />
+            <span className="text-lg">
+              <span className="text-primary">Go</span>Request
+              <span className="font-normal text-muted-foreground"> / web</span>
+            </span>
           </Link>
           <div className="flex items-center gap-4">
-            {user && <><span className="hidden max-w-60 truncate text-sm text-muted-foreground sm:block">{user.email}</span><Button variant="ghost" size="sm" onClick={logout} disabled={loggingOut}><LogOut />Sign out</Button></>}
+            {!loading &&
+              (user ? (
+                <>
+                  <span className="hidden max-w-60 truncate text-sm text-muted-foreground sm:block">
+                    {user.email}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={logout}
+                    disabled={loggingOut}
+                  >
+                    <LogOut />
+                    Sign out
+                  </Button>
+                </>
+              ) : (
+                <GitHubSignInButton />
+              ))}
           </div>
         </div>
       </header>
       <main className="mx-auto w-full max-w-7xl flex-1 px-5 py-8 sm:px-8">
-        {error && <div role="alert" className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/25 bg-card p-4 text-sm"><p className="text-destructive">{error}</p><Button variant="outline" size="sm" onClick={() => { setLoading(true); setError(""); void loadSession(); }}>Retry connection</Button></div>}
-        {loading ? <div className="flex min-h-96 items-center justify-center gap-3 text-sm text-muted-foreground"><LoaderCircle size={18} className="animate-spin" />Opening your workspace…</div> : user ? <RequestWorkbench onSessionExpired={() => { setUser(null); setError("Your session expired. Sign in again to continue."); }} /> : <AuthForm onAuthenticated={(user) => { setUser(user); setError(""); }} />}
+        {error && (
+          <div
+            role="alert"
+            className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/25 bg-card p-4 text-sm"
+          >
+            <p className="text-destructive">{error}</p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setLoading(true);
+                setError("");
+                void loadSession();
+              }}
+            >
+              Retry connection
+            </Button>
+          </div>
+        )}
+        {loading ? (
+          <div className="flex min-h-96 items-center justify-center gap-3 text-sm text-muted-foreground">
+            <LoaderCircle
+              size={18}
+              className="animate-spin"
+            />
+            Opening your workspace…
+          </div>
+        ) : (
+          <RequestWorkbench
+            onSessionExpired={() => {
+              setUser(null);
+              setError(
+                "The API requires authentication for this request. Sign in with GitHub and try again.",
+              );
+            }}
+          />
+        )}
       </main>
-      <footer className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-3 border-t px-5 py-5 text-xs text-muted-foreground sm:px-8"><span>GoRequest · A focused space for your APIs.</span><a href="https://github.com/MarlonBBo/GoRequest" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 hover:text-foreground">Open source, built with Go<ArrowUpRight size={13} /></a></footer>
+      <footer className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-3 border-t px-5 py-5 text-xs text-muted-foreground sm:px-8">
+        <span>GoRequest · A focused space for your APIs.</span>
+        <a
+          href="https://github.com/MarlonBBo/GoRequest"
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-1 hover:text-foreground"
+        >
+          Open source, built with Go
+          <ArrowUpRight size={13} />
+        </a>
+      </footer>
     </div>
   );
 }
