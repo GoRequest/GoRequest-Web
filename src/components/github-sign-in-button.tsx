@@ -7,6 +7,7 @@ export function GitHubSignInButton() {
     <Button
       asChild
       size="sm"
+      variant="outline"
     >
       <a href={GITHUB_SIGN_IN_URL}>
         <LogIn />

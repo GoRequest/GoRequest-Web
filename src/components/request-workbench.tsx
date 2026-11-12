@@ -6,9 +6,14 @@ import {
   ArrowRight,
   CircleStop,
   Clock3,
+  Code2,
+  CornerDownLeft,
+  FileJson,
+  Globe2,
   LoaderCircle,
   Plus,
   Send,
+  ShieldCheck,
   Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -113,76 +118,90 @@ export function RequestWorkbench({
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
+    <div className="workbench">
+      <div className="workbench-heading">
         <div>
-          <p className="mb-2 text-xs font-medium uppercase tracking-[0.16em] text-primary">
-            Workspace
+          <p className="workspace-breadcrumb">
+            Workspace <span>/</span> HTTP client
           </p>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Make your next request.
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Compose, send, and see exactly what comes back.
+          <h1>Your API workspace.</h1>
+          <p className="workbench-description">
+            Send a request. Get the full response.
           </p>
         </div>
-        <span className="hidden rounded-full border bg-card px-3 py-1.5 text-xs text-muted-foreground sm:block">
-          HTTP / HTTPS
+        <span className="protocol-label">
+          <Globe2 size={15} /> HTTP / HTTPS
         </span>
       </div>
-      <section
-        className="glass-panel overflow-hidden rounded-xl border"
+      <div
+        className="request-window app-frame"
         aria-label="Request editor"
       >
-        <div className="flex items-center gap-2 border-b px-5 py-3 text-sm font-medium">
-          <span className="size-1.5 rounded-full bg-primary" />
-          Untitled request
+        <div className="window-titlebar">
+          <div className="request-document">
+            <span className="method-label">{method}</span> Untitled request{" "}
+            <span
+              className="unsaved-dot"
+              aria-label="Unsaved request"
+            />
+          </div>
+          <span className="window-caption">
+            Request builder <Code2 size={15} />
+          </span>
         </div>
         <form
           onSubmit={execute}
-          className="space-y-5 p-5"
+          className="request-form"
         >
-          <div className="flex flex-wrap gap-3">
-            <label
-              className="sr-only"
-              htmlFor="method"
-            >
-              HTTP method
-            </label>
-            <select
-              id="method"
-              value={method}
-              onChange={(event) => setMethod(event.target.value as HttpMethod)}
-              disabled={pending}
-              className="h-11 rounded-md border bg-secondary px-3 font-mono text-sm font-semibold text-primary outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              {HTTP_METHODS.map((method) => (
-                <option key={method}>{method}</option>
-              ))}
-            </select>
-            <label
-              className="sr-only"
-              htmlFor="url"
-            >
-              Request URL
-            </label>
-            <Input
-              id="url"
-              type="url"
-              required
-              value={url}
-              onChange={(event) => setUrl(event.target.value)}
-              disabled={pending}
-              placeholder="https://api.example.com"
-              className="h-11 min-w-40 flex-1 font-mono"
-            />
+          <div className="request-address">
+            <div className="method-field">
+              <label
+                className="field-label"
+                htmlFor="method"
+              >
+                Method
+              </label>
+              <select
+                id="method"
+                value={method}
+                onChange={(event) =>
+                  setMethod(event.target.value as HttpMethod)
+                }
+                disabled={pending}
+                className="method-select"
+              >
+                {HTTP_METHODS.map((method) => (
+                  <option key={method}>{method}</option>
+                ))}
+              </select>
+            </div>
+            <div className="url-field">
+              <label
+                className="field-label"
+                htmlFor="url"
+              >
+                Request URL
+              </label>
+              <Input
+                id="url"
+                type="url"
+                required
+                value={url}
+                onChange={(event) => setUrl(event.target.value)}
+                disabled={pending}
+                placeholder="https://api.example.com"
+                className="url-input"
+                spellCheck={false}
+              />
+            </div>
             <Button
               type="submit"
               disabled={pending}
-              className="h-11 px-6"
+              className="send-button"
             >
               {pending ? <LoaderCircle className="animate-spin" /> : <Send />}
               Send request
+              <CornerDownLeft className="send-enter" />
             </Button>
             {pending && (
               <Button
@@ -196,248 +215,325 @@ export function RequestWorkbench({
               </Button>
             )}
           </div>
-          <Tabs defaultValue="headers">
-            <TabsList>
-              <TabsTrigger value="headers">
-                Headers
-                {headers.some((header) => header.key)
-                  ? ` (${headers.filter((header) => header.key).length})`
-                  : ""}
-              </TabsTrigger>
-              <TabsTrigger value="body">Body</TabsTrigger>
-              <TabsTrigger value="settings">Settings</TabsTrigger>
-            </TabsList>
-            <TabsContent
-              value="headers"
-              className="space-y-3"
+          {error && (
+            <p
+              role="alert"
+              className="request-error"
             >
-              <p className="text-xs text-muted-foreground">
-                Add destination headers here, including Authorization for bearer
-                tokens.
-              </p>
-              {headers.map((header, index) => (
-                <div
-                  key={header.id}
-                  className="flex gap-2"
+              {error}
+            </p>
+          )}
+          <div className="editor-grid">
+            <section
+              className="request-details"
+              aria-label="Request options"
+            >
+              <Tabs
+                defaultValue="headers"
+                className="editor-tabs"
+              >
+                <TabsList
+                  variant="line"
+                  className="editor-tablist"
                 >
-                  <Input
-                    aria-label={`Header ${index + 1} name`}
-                    placeholder="Header name"
-                    value={header.key}
-                    disabled={pending}
-                    onChange={(event) =>
-                      setHeaders(
-                        headers.map((row) =>
-                          row.id === header.id
-                            ? { ...row, key: event.target.value }
-                            : row,
-                        ),
-                      )
-                    }
-                    className="font-mono"
-                  />
-                  <Input
-                    aria-label={`Header ${index + 1} value`}
-                    placeholder="Value"
-                    value={header.value}
-                    disabled={pending}
-                    onChange={(event) =>
-                      setHeaders(
-                        headers.map((row) =>
-                          row.id === header.id
-                            ? { ...row, value: event.target.value }
-                            : row,
-                        ),
-                      )
-                    }
-                    className="font-mono"
-                  />
+                  <TabsTrigger value="headers">
+                    Headers
+                    {headers.some((header) => header.key)
+                      ? ` (${headers.filter((header) => header.key).length})`
+                      : ""}
+                  </TabsTrigger>
+                  <TabsTrigger value="body">Body</TabsTrigger>
+                  <TabsTrigger value="settings">Settings</TabsTrigger>
+                </TabsList>
+                <TabsContent
+                  value="headers"
+                  className="space-y-3"
+                >
+                  <div
+                    className="headers-table-labels"
+                    aria-hidden="true"
+                  >
+                    <span>Header name</span>
+                    <span>Value</span>
+                    <span />
+                  </div>
+                  {headers.map((header, index) => (
+                    <div
+                      key={header.id}
+                      className="header-row"
+                    >
+                      <Input
+                        aria-label={`Header ${index + 1} name`}
+                        placeholder="Header name"
+                        value={header.key}
+                        disabled={pending}
+                        onChange={(event) =>
+                          setHeaders(
+                            headers.map((row) =>
+                              row.id === header.id
+                                ? { ...row, key: event.target.value }
+                                : row,
+                            ),
+                          )
+                        }
+                        className="header-input font-mono"
+                      />
+                      <Input
+                        aria-label={`Header ${index + 1} value`}
+                        placeholder="Value"
+                        value={header.value}
+                        disabled={pending}
+                        onChange={(event) =>
+                          setHeaders(
+                            headers.map((row) =>
+                              row.id === header.id
+                                ? { ...row, value: event.target.value }
+                                : row,
+                            ),
+                          )
+                        }
+                        className="header-input font-mono"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        aria-label={`Remove header ${index + 1}`}
+                        className="remove-header"
+                        disabled={pending}
+                        onClick={() =>
+                          setHeaders(
+                            headers.filter((row) => row.id !== header.id),
+                          )
+                        }
+                      >
+                        <Trash2 />
+                      </Button>
+                    </div>
+                  ))}
                   <Button
                     type="button"
                     variant="ghost"
-                    size="icon"
-                    aria-label={`Remove header ${index + 1}`}
+                    size="sm"
                     disabled={pending}
                     onClick={() =>
-                      setHeaders(headers.filter((row) => row.id !== header.id))
+                      setHeaders([
+                        ...headers,
+                        { id: nextId.current++, key: "", value: "" },
+                      ])
                     }
                   >
-                    <Trash2 />
+                    <Plus />
+                    Add header
                   </Button>
-                </div>
-              ))}
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                disabled={pending}
-                onClick={() =>
-                  setHeaders([
-                    ...headers,
-                    { id: nextId.current++, key: "", value: "" },
-                  ])
-                }
-              >
-                <Plus />
-                Add header
-              </Button>
-            </TabsContent>
-            <TabsContent value="body">
-              <label
-                htmlFor="body"
-                className="mb-3 block text-xs text-muted-foreground"
-              >
-                Raw request body. Set the appropriate Content-Type in Headers.
-              </label>
-              <Textarea
-                id="body"
-                value={body}
-                disabled={pending}
-                onChange={(event) => setBody(event.target.value)}
-                placeholder={'{\n  "message": "hello"\n}'}
-                className="min-h-40 font-mono"
-                spellCheck={false}
-              />
-            </TabsContent>
-            <TabsContent
-              value="settings"
-              className="space-y-2"
-            >
-              <label
-                htmlFor="timeout"
-                className="text-sm font-medium"
-              >
-                Timeout (milliseconds)
-              </label>
-              <Input
-                id="timeout"
-                type="number"
-                min={1}
-                max={60000}
-                step={1}
-                required
-                value={timeout}
-                disabled={pending}
-                onChange={(event) => setTimeoutMs(Number(event.target.value))}
-                className="max-w-60"
-              />
-              <p className="text-xs text-muted-foreground">
-                Between 1 and 60,000 ms, including response download time.
-              </p>
-            </TabsContent>
-          </Tabs>
-        </form>
-      </section>
-      {error && (
-        <p
-          role="alert"
-          className="rounded-lg border border-destructive/25 bg-card p-4 text-sm text-destructive"
-        >
-          {error}
-        </p>
-      )}
-      <section
-        aria-label="Response"
-        aria-busy={pending}
-        className="glass-panel overflow-hidden rounded-xl border"
-      >
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4">
-          <h2 className="text-sm font-medium">Response</h2>
-          {response && (
-            <div
-              role="status"
-              className="flex flex-wrap items-center gap-4 font-mono text-xs"
-            >
-              <span
-                className={`rounded-md px-2 py-1 ${response.status_code < 400 ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"}`}
-              >
-                {response.status}
-              </span>
-              <span className="flex items-center gap-1.5 text-muted-foreground">
-                <Clock3 size={13} />
-                {response.duration_ms.toFixed(2)} ms
-              </span>
-              <span className="flex items-center gap-1.5 text-muted-foreground">
-                <ArrowDownToLine size={13} />
-                {response.size_bytes.toLocaleString()} B
-              </span>
-            </div>
-          )}
-        </div>
-        {response ? (
-          <Tabs
-            defaultValue="body"
-            className="p-5"
-          >
-            <TabsList>
-              <TabsTrigger value="body">Body</TabsTrigger>
-              <TabsTrigger value="headers">Headers</TabsTrigger>
-            </TabsList>
-            <TabsContent value="body">
-              <pre className="max-h-[32rem] overflow-auto rounded-md bg-background p-4 font-mono text-xs leading-6">
-                {response.body ? prettyBody(response.body) : "(empty body)"}
-              </pre>
-            </TabsContent>
-            <TabsContent value="headers">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <caption className="sr-only">Response headers</caption>
-                  <thead>
-                    <tr className="border-b">
-                      <th className="p-3 font-medium">Name</th>
-                      <th className="p-3 font-medium">Value</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {Object.entries(response.headers ?? {}).flatMap(
-                      ([key, values]) =>
-                        values.map((value, index) => (
-                          <tr
-                            key={`${key}-${index}`}
-                            className="border-b last:border-0"
-                          >
-                            <td className="p-3 align-top font-mono">{key}</td>
-                            <td className="break-all p-3 font-mono">{value}</td>
-                          </tr>
-                        )),
-                    )}
-                  </tbody>
-                </table>
+                  <p className="headers-help">
+                    Pass bearer tokens with the <code>Authorization</code>{" "}
+                    header.
+                  </p>
+                </TabsContent>
+                <TabsContent value="body">
+                  <label
+                    htmlFor="body"
+                    className="mb-3 block text-xs text-muted-foreground"
+                  >
+                    Raw request body. Set the appropriate Content-Type in
+                    Headers.
+                  </label>
+                  <Textarea
+                    id="body"
+                    value={body}
+                    disabled={pending}
+                    onChange={(event) => setBody(event.target.value)}
+                    placeholder={'{\n  "message": "hello"\n}'}
+                    className="body-editor font-mono"
+                    spellCheck={false}
+                  />
+                </TabsContent>
+                <TabsContent
+                  value="settings"
+                  className="space-y-2"
+                >
+                  <label
+                    htmlFor="timeout"
+                    className="text-sm font-medium"
+                  >
+                    Timeout (milliseconds)
+                  </label>
+                  <Input
+                    id="timeout"
+                    type="number"
+                    min={1}
+                    max={60000}
+                    step={1}
+                    required
+                    value={timeout}
+                    disabled={pending}
+                    onChange={(event) =>
+                      setTimeoutMs(Number(event.target.value))
+                    }
+                    className="max-w-60"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Between 1 and 60,000 ms, including response download time.
+                  </p>
+                </TabsContent>
+              </Tabs>
+              <div className="request-details-foot">
+                <ShieldCheck size={14} /> Session cookies stay with GoRequest.
               </div>
-            </TabsContent>
-          </Tabs>
-        ) : (
-          <div className="flex min-h-56 flex-col items-center justify-center gap-3 p-6 text-center">
-            <span className="flex size-11 items-center justify-center rounded-full bg-secondary text-primary">
-              {pending ? (
-                <LoaderCircle
-                  size={20}
-                  className="animate-spin"
-                />
-              ) : (
-                <ArrowRight size={20} />
-              )}
-            </span>
-            <p
-              role="status"
-              className="text-sm font-medium"
+            </section>
+            <section
+              aria-label="Response"
+              aria-busy={pending}
+              className="response-panel"
             >
-              {pending
-                ? "Waiting for a response…"
-                : "Your response will appear here"}
-            </p>
-            <p className="max-w-sm text-xs leading-5 text-muted-foreground">
-              {pending
-                ? "GoRequest is executing your request."
-                : "Send a request to inspect its status, timing, headers, and body."}
-            </p>
+              <div className="response-titlebar">
+                <h2>Response</h2>
+                {!response && (
+                  <span className="response-state">
+                    {pending ? "Running" : "No response yet"}
+                  </span>
+                )}
+                {response && (
+                  <div
+                    role="status"
+                    className="flex flex-wrap items-center gap-4 font-mono text-xs"
+                  >
+                    <span
+                      className={`rounded-md px-2 py-1 ${response.status_code < 400 ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"}`}
+                    >
+                      {response.status}
+                    </span>
+                    <span className="flex items-center gap-1.5 text-muted-foreground">
+                      <Clock3 size={13} />
+                      {response.duration_ms.toFixed(2)} ms
+                    </span>
+                    <span className="flex items-center gap-1.5 text-muted-foreground">
+                      <ArrowDownToLine size={13} />
+                      {response.size_bytes.toLocaleString()} B
+                    </span>
+                  </div>
+                )}
+              </div>
+              {response ? (
+                <Tabs
+                  defaultValue="body"
+                  className="response-tabs editor-tabs"
+                >
+                  <TabsList
+                    variant="line"
+                    className="editor-tablist"
+                  >
+                    <TabsTrigger value="body">Body</TabsTrigger>
+                    <TabsTrigger value="headers">Headers</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="body">
+                    <pre className="response-code">
+                      {response.body
+                        ? prettyBody(response.body)
+                        : "(empty body)"}
+                    </pre>
+                  </TabsContent>
+                  <TabsContent value="headers">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs">
+                        <caption className="sr-only">Response headers</caption>
+                        <thead>
+                          <tr className="border-b">
+                            <th className="p-3 font-medium">Name</th>
+                            <th className="p-3 font-medium">Value</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {Object.entries(response.headers ?? {}).flatMap(
+                            ([key, values]) =>
+                              values.map((value, index) => (
+                                <tr
+                                  key={`${key}-${index}`}
+                                  className="border-b last:border-0"
+                                >
+                                  <td className="p-3 align-top font-mono">
+                                    {key}
+                                  </td>
+                                  <td className="break-all p-3 font-mono">
+                                    {value}
+                                  </td>
+                                </tr>
+                              )),
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              ) : (
+                <div className="response-empty">
+                  <div
+                    className="empty-response-art"
+                    aria-hidden="true"
+                  >
+                    <span className="empty-bracket">&#123;</span>
+                    <span className="empty-art-lines">
+                      <i />
+                      <i />
+                      <i />
+                    </span>
+                    <span className="empty-bracket">&#125;</span>
+                  </div>
+                  <span className="response-empty-icon">
+                    {pending ? (
+                      <LoaderCircle
+                        size={20}
+                        className="animate-spin"
+                      />
+                    ) : (
+                      <FileJson size={20} />
+                    )}
+                  </span>
+                  <p
+                    role="status"
+                    className="empty-response-title"
+                  >
+                    {pending ? "Waiting for a response…" : "Ready when you are"}
+                  </p>
+                  <p className="empty-response-description">
+                    {pending
+                      ? "GoRequest is executing your request."
+                      : "Send your request to inspect the response body, headers, status, and timing."}
+                  </p>
+                  {!pending && (
+                    <span className="response-flow">
+                      Request <ArrowRight size={13} /> Response
+                    </span>
+                  )}
+                </div>
+              )}
+            </section>
           </div>
-        )}
-      </section>
-      <p className="text-xs leading-5 text-muted-foreground">
-        Public destinations only. Responses are limited to 5 MiB. Redirects are
-        returned without being followed.
-      </p>
+        </form>
+        <div className="window-statusbar">
+          <span>
+            <ShieldCheck size={13} /> Public destinations only
+          </span>
+          <span>
+            5 MiB response limit <span className="statusbar-divider">/</span>{" "}
+            Redirects returned as received
+          </span>
+        </div>
+      </div>
+      <div className="workspace-tip">
+        <span>
+          <Code2 size={16} /> Test an endpoint, inspect the details, adjust your
+          request.
+        </span>
+        <a
+          href="https://github.com/MarlonBBo/GoRequest#execute-an-http-request"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Read the API guide <ArrowRight size={14} />
+        </a>
+      </div>
     </div>
   );
 }
